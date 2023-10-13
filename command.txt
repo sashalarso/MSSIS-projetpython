@@ -1,0 +1,31 @@
+pyinstaller --noconsole --onefile 03.py
+
+
+https://sharemycode.fr/xsm
+
+# Projet ESIEA
+
+On vous demande de créer un outil multi fonctions d’analyse de fichiers.
+
+Il doit comporter a minima :
+
+- Éditeur hexadécimal de fichiers locaux  
+- Visualiseur hexadécimal de fichiers réseau (http/https) - afficher également les entêtes http
+- Si ce sont des images, affichage des données exif si existantes - et export au format json 
+- Affichage des infos : poids, date de modif…
+
+## contraintes 
+
+- python
+- repot gitlab / GitHub 
+- Programmation objet
+- Gestion des erreurs
+- Interface graphique Pyside6 - disposition à votre convenance, pensez ergonomie d’utilisation…
+- Captures écrans des fenêtres et mini mode d’emploi (via le readme.md du git)
+
+## ressources
+- https://fr.m.wikipedia.org/wiki/%C3%89diteur_hexad%C3%A9cimal
+- https://fr.m.wikipedia.org/wiki/Exchangeable_image_file_format
+
+
+github : rcarlier
