@@ -1,7 +1,7 @@
 import sys
 import binascii
 import requests
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit,QTableWidget,QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit,QTableWidget,QTableWidgetItem
 from PySide6.QtCore import QTimer
 from PIL import Image
 from PIL.ExifTags import TAGS
@@ -24,7 +24,7 @@ class HexEditor(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('Hex Editor')
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 900, 900)
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -49,10 +49,16 @@ class HexEditor(QMainWindow):
         self.file_content.setPlaceholderText("File Content")
         layout.addWidget(self.file_content)
 
+        headers_label = QLabel("Headers HTTP:", self)
+        layout.addWidget(headers_label)
+
         self.headers_table = QTableWidget(self)
         self.headers_table.setColumnCount(2)
         self.headers_table.setHorizontalHeaderLabels(['Header', 'Value'])
         layout.addWidget(self.headers_table)
+
+        exif_label = QLabel("Exif datas:", self)
+        layout.addWidget(exif_label)
 
         self.exif_table = QTableWidget(self)
         self.exif_table.setColumnCount(2)
@@ -76,8 +82,10 @@ class HexEditor(QMainWindow):
 
     def loadFileOrRequest(self):
         user_input = self.url_input.text()
+        self.url_input.clear()
         if user_input.startswith("http://") or user_input.startswith("https://"):
             response = requests.get(user_input)
+            self.clearExifDatas()
             if response.status_code == 200:
                 self.binary_data = response.content
                 try:
@@ -96,16 +104,16 @@ class HexEditor(QMainWindow):
                 if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
                     # Chargement de l'image locale
                     image = Image.open(file_name)
-                    print(image)
+                    
                     with open(file_name, "rb") as file:
                         self.binary_data = file.read()
                         
-                    # Affichage de l'hexadécimal
-                    #self.hex_edit.setPlainText(binascii.hexlify(self.binary_data).decode("utf-8"))
-                    print(self.getExifData(image))
+                    self.clearHttpHeaders()
+                    self.hex_edit.setPlainText(binascii.hexlify(self.binary_data).decode("utf-8"))
                     # Affichage des données EXIF
                     self.displayExifData(image)
                 else:
+                    self.clearExifDatas()
                     with open(file_name, "rb") as file:
                         self.binary_data = file.read()
                         self.hex_edit.setPlainText(binascii.hexlify(self.binary_data).decode("utf-8"))
@@ -139,10 +147,14 @@ class HexEditor(QMainWindow):
             # Sauvegarde la position de défilement
             self.scroll_position = self.file_content.verticalScrollBar().value()
             hex_text = self.hex_edit.toPlainText()
+            hex_text = ''.join(c for c in hex_text if c.isalnum())
+            
             try:
+                
                 binary_data = binascii.unhexlify(hex_text)
-                self.binary_data = binary_data
-                self.file_content.setPlainText(binary_data.decode("utf-8"))
+                self.binary_data = binary_data                         
+                              
+                self.file_content.setPlainText(binary_data.decode("utf-8",errors="ignore"))
             except binascii.Error:
                 pass
             finally:
@@ -186,6 +198,8 @@ class HexEditor(QMainWindow):
 
     def clearHttpHeaders(self):
         self.headers_table.setRowCount(0)
+    def clearExifDatas(self):
+        self.exif_table.setRowCount(0)
 
 def main():
     app = QApplication(sys.argv)
