@@ -20,7 +20,7 @@ class HexEditor(QMainWindow):
         self.timer.timeout.connect(self.delayedConversion)
 
         # Stocke la position de défilement
-        self.scroll_position = 0
+        
 
     def initUI(self):
         self.setWindowTitle('Hex Editor')
@@ -159,6 +159,7 @@ class HexEditor(QMainWindow):
                 pass
             finally:
                 self.pending_hex_conversion = False
+            self.file_content.verticalScrollBar().setValue(self.scroll_position)
     def displayExifData(self, image):
         self.exif_data = self.getExifData(image)
         i=0
@@ -175,9 +176,12 @@ class HexEditor(QMainWindow):
             self.pending_hex_conversion = True
             self.scroll_position = self.file_content.verticalScrollBar().value()
             text_data = self.file_content.toPlainText()
-            self.hex_edit.setPlainText(binascii.hexlify(text_data.encode("utf-8")).decode("utf-8"))
+            hex=binascii.hexlify(text_data.encode("utf-8")).decode("utf-8")
+            formatted_hex = ' '.join(hex[i:i+2] for i in range(0, len(hex), 2))
+            self.hex_edit.setPlainText(formatted_hex)
             self.binary_data = text_data.encode("utf-8")
             self.pending_hex_conversion = False
+            self.hex_edit.verticalScrollBar().setValue(self.scroll_position)
     def exportExifAsJSON(self):
         if self.exif_data:
             exif_json = {}
