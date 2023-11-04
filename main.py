@@ -1,7 +1,7 @@
 import sys
 import binascii
 import requests
-from PySide6.QtWidgets import QApplication, QLabel, QMainWindow, QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit,QTableWidget,QTableWidgetItem
+from PySide6.QtWidgets import QApplication,QHBoxLayout, QLabel, QMainWindow, QWidget, QVBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit,QTableWidget,QTableWidgetItem
 from PySide6.QtCore import QTimer
 from PIL import Image
 from PIL.ExifTags import TAGS
@@ -22,58 +22,69 @@ class HexEditor(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('Hex Editor')
-        self.setGeometry(100, 100, 900, 900)
+        self.setGeometry(100, 100, 900, 800)  
 
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        layout = QVBoxLayout()
-        central_widget.setLayout(layout)
+        main_layout = QVBoxLayout()  
+        central_widget.setLayout(main_layout)
+
+        top_layout = QHBoxLayout()
+        bottom_layout = QHBoxLayout()  
+
+        left_layout = QVBoxLayout()
+        right_layout = QVBoxLayout()                 
 
         self.url_input = QLineEdit(self)
         self.url_input.setPlaceholderText("Enter URL for HTTP request")
-        layout.addWidget(self.url_input)
+        main_layout.addWidget(self.url_input)
 
         self.load_button = QPushButton("Load File/Request", self)
         self.load_button.clicked.connect(self.loadFileOrRequest)
-        
-        layout.addWidget(self.load_button)
+        main_layout.addWidget(self.load_button)
+
+        main_layout.addLayout(top_layout, 4)  
+        main_layout.addLayout(bottom_layout, 2)  
 
         self.hex_edit = QPlainTextEdit(self)
         self.hex_edit.setPlaceholderText("Hexadecimal")
-        layout.addWidget(self.hex_edit)
+        top_layout.addWidget(self.hex_edit)
 
         self.file_content = QPlainTextEdit(self)
         self.file_content.setPlaceholderText("File Content")
-        layout.addWidget(self.file_content)
+        top_layout.addWidget(self.file_content)
 
         headers_label = QLabel("Headers HTTP:", self)
-        layout.addWidget(headers_label)
+        left_layout.addWidget(headers_label)
 
         self.headers_table = QTableWidget(self)
         self.headers_table.setColumnCount(2)
         self.headers_table.setHorizontalHeaderLabels(['Header', 'Value'])
-        layout.addWidget(self.headers_table)
+        left_layout.addWidget(self.headers_table)
 
         exif_label = QLabel("Exif datas:", self)
-        layout.addWidget(exif_label)
+        right_layout.addWidget(exif_label)
 
         self.exif_table = QTableWidget(self)
         self.exif_table.setColumnCount(2)
         self.exif_table.setHorizontalHeaderLabels(['Tag', 'Value'])
-        layout.addWidget(self.exif_table)
+        right_layout.addWidget(self.exif_table)
+
+        bottom_layout.addLayout(left_layout)
+        bottom_layout.addLayout(right_layout)
 
         save_button = QPushButton("Save File", self)
         save_button.clicked.connect(self.saveFile)
-        layout.addWidget(save_button)
+        main_layout.addWidget(save_button)
 
         export_button = QPushButton("Export EXIF as JSON", self)
         export_button.clicked.connect(self.exportExifAsJSON)
-        layout.addWidget(export_button)
+        main_layout.addWidget(export_button)
 
         self.binary_data = b''
         self.pending_hex_conversion = False
-        self.exif_data=None
+        self.exif_data = None
 
         self.hex_edit.textChanged.connect(self.delayedConversion)
         self.file_content.textChanged.connect(self.delayedConversionText)
@@ -107,7 +118,10 @@ class HexEditor(QMainWindow):
                         self.binary_data = file.read()
                         
                     self.clearHttpHeaders()
-                    self.hex_edit.setPlainText(binascii.hexlify(self.binary_data).decode("utf-8"))
+                    hex=binascii.hexlify(self.binary_data).decode("utf-8")
+                    formatted_hex = ' '.join(hex[i:i+2] for i in range(0, len(hex), 2))
+                    self.hex_edit.setPlainText(formatted_hex)
+                    #self.hex_edit.setPlainText(binascii.hexlify(self.binary_data).decode("utf-8"))
                     # Affichage des données EXIF
                     self.displayExifData(image)
                 else:
@@ -169,6 +183,7 @@ class HexEditor(QMainWindow):
                 i+=1
         else:
             self.exif_table.setRowCount(0)
+
     def delayedConversionText(self):
         if not self.pending_hex_conversion:
             self.pending_hex_conversion = True
@@ -180,6 +195,7 @@ class HexEditor(QMainWindow):
             self.binary_data = text_data.encode("utf-8")
             self.pending_hex_conversion = False
             self.hex_edit.verticalScrollBar().setValue(self.scroll_position)
+
     def exportExifAsJSON(self):
         if self.exif_data:
             exif_json = {}
