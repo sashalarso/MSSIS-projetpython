@@ -19,7 +19,7 @@ class HexEditor(QMainWindow):
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.delayedConversion)
 
-        # Stocke la position de défilement
+        
         
 
     def initUI(self):
