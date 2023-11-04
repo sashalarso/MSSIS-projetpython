@@ -13,13 +13,11 @@ class HexEditor(QMainWindow):
 
         self.initUI()
 
-        # Créez un minuteur pour la conversion différée
         self.timer = QTimer()
         self.timer.setInterval(1000)  # 1000 ms (1 seconde)
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.delayedConversion)
-
-        
+               
         
 
     def initUI(self):
