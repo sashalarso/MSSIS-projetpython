@@ -1,6 +1,6 @@
 Cloner le dépot : `git clone https://github.com/sashalarso/MSSIS-projetpython.git`
 
-Se placer dedans avec `MSSIS-projerpython`
+Se placer dedans avec `cd MSSIS-projetpython`
 
 Créer un venv `python3 -m venv name`
 
